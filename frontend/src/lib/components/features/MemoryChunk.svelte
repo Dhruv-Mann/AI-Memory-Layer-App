@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
+	import { motionSlide } from '../../utils/animations';
 	import Button from '../primitives/Button.svelte';
 	import KeyboardHint from '../primitives/KeyboardHint.svelte';
 
@@ -112,7 +112,7 @@
 	{#if isExpanded}
 		<div 
 			class="border-t-2 border-border-base bg-surface-secondary/20 block"
-			transition:slide={{ duration: 200 }}
+			transition:motionSlide={{ duration: 200 }}
 		>
 			<div class="p-4 font-mono text-sm text-content-primary leading-relaxed whitespace-pre-wrap">
 				{data.fullContext}

@@ -89,10 +89,28 @@
   --border-radius-lg:   8px;
 
   /* Animation */
-  --anim-duration-fast: 150ms;
-  --anim-duration-base: 300ms;
-  --anim-duration-slow: 500ms;
+  --anim-duration-instant: 0ms;
+  --anim-duration-fast:    100ms;
+  --anim-duration-normal:  200ms;
+  --anim-duration-base:    200ms;
+  --anim-duration-slow:    300ms;
+
+  --anim-ease-in:       cubic-bezier(0.4, 0, 1, 1);
+  --anim-ease-out:      cubic-bezier(0, 0, 0.2, 1);
+  --anim-ease-in-out:   cubic-bezier(0.4, 0, 0.2, 1);
   --anim-ease-brutal:   cubic-bezier(0.2, 1, 0.2, 1); /* Snappy and direct */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --anim-duration-fast:   0ms;
+    --anim-duration-normal: 0ms;
+    --anim-duration-base:   0ms;
+    --anim-duration-slow:   0ms;
+  }
+}
+
+:root {
 
   /* Z-Index Layers */
   --z-base:            0;
@@ -103,4 +121,71 @@
   --z-tooltip:         80;
   --z-command-palette: 90;
   --z-notification:    100;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideInFromLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInFromRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInFromTop {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideInFromBottom {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@layer utilities {
+  .animate-in {
+    animation-duration: var(--anim-duration-base, 200ms);
+    animation-timing-function: var(--anim-ease-brutal, cubic-bezier(0.2, 1, 0.2, 1));
+    animation-fill-mode: both;
+  }
+
+  .fade-in {
+    animation-name: fadeIn;
+  }
+
+  .zoom-in-95 {
+    animation-name: zoomIn;
+  }
+
+  .slide-in-from-left {
+    animation-name: slideInFromLeft;
+  }
+  
+  .slide-in-from-right {
+    animation-name: slideInFromRight;
+  }
+  
+  .slide-in-from-top {
+    animation-name: slideInFromTop;
+  }
+  
+  .slide-in-from-bottom {
+    animation-name: slideInFromBottom;
+  }
 }

@@ -109,11 +109,16 @@ export default {
         lg: 'var(--border-radius-lg)',
       },
       transitionDuration: {
+        instant: 'var(--anim-duration-instant)',
         fast: 'var(--anim-duration-fast)',
+        normal: 'var(--anim-duration-normal)',
         base: 'var(--anim-duration-base)',
         slow: 'var(--anim-duration-slow)',
       },
       transitionTimingFunction: {
+        'ease-in': 'var(--anim-ease-in)',
+        'ease-out': 'var(--anim-ease-out)',
+        'ease-in-out': 'var(--anim-ease-in-out)',
         brutal: 'var(--anim-ease-brutal)',
       },
       zIndex: {
