@@ -94,7 +94,14 @@
 		</button>
 	</div>
 	<div class="relative" style="height: {height}px;">
-		<svg width="100%" {height}>
+		<svg 
+			width="100%" 
+			{height}
+			role="img"
+			aria-label="Bar chart showing topic performance"
+		>
+			<title>Bar Chart</title>
+			<desc>A bar chart visualizing topic performance metrics with hover states.</desc>
 			<g transform={`translate(${margin.left},${margin.top})`}>
 				<!-- Grid lines -->
 				{#if yScale}

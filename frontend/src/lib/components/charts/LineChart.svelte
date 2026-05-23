@@ -193,7 +193,11 @@
 			onmousemove={handleMouseMove}
 			onmouseleave={handleMouseLeave}
 			class="cursor-crosshair"
+			role="img"
+			aria-label="Line chart showing performance metrics over time"
 		>
+			<title>Line Chart</title>
+			<desc>A line chart visualizing metrics over time with interactive details.</desc>
 			<g transform={`translate(${margin.left},${margin.top})`}>
 				<!-- Grid lines -->
 				{#if yScale}

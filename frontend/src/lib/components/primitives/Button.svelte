@@ -71,6 +71,7 @@
 			baseClasses,
 			sizeClasses[size],
 			variantClasses[variant],
+			size === 'sm' || variant === 'icon' ? 'touch-target-extend' : '',
 			fullWidth ? 'w-full' : '',
 			disabled || loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : '',
 			className

@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { layoutStore } from '../../stores/layoutStore';
 	import ResizablePanel from './ResizablePanel.svelte';
+	import SkipLink from '../primitives/SkipLink.svelte';
 
 	interface Props {
 		sidebar?: Snippet;
@@ -23,9 +24,18 @@
 </script>
 
 <div class="w-full h-screen overflow-hidden flex flex-col bg-surface-base text-content-primary">
+	<!-- Accessibility Skip Links -->
+	<SkipLink targetId="main-content" label="Skip to main content" />
+	{#if storeParams.sidebar.visible && sidebar}
+		<SkipLink targetId="sidebar-content" label="Skip to navigation" />
+	{/if}
+	{#if storeParams.commandBar.visible && commandBar}
+		<SkipLink targetId="command-bar" label="Skip to command bar" />
+	{/if}
+
 	<!-- Command Bar Region -->
 	{#if storeParams.commandBar.visible && commandBar}
-		<header class="shrink-0 border-b border-border-base bg-surface-base z-10 relative">
+		<header id="command-bar" tabindex="-1" class="shrink-0 border-b border-border-base bg-surface-base z-10 relative outline-none">
 			{@render commandBar()}
 		</header>
 	{/if}
@@ -43,7 +53,9 @@
 				onResizeEnd={(size) => layoutStore.updatePanel('sidebar', { size })}
 				class="z-10 relative"
 			>
-				{@render sidebar()}
+				<div id="sidebar-content" tabindex="-1" class="h-full w-full outline-none">
+					{@render sidebar()}
+				</div>
 			</ResizablePanel>
 		{/if}
 
@@ -68,7 +80,7 @@
 				{/if}
 
 				<!-- Main Content Viewport -->
-				<main class="flex-1 overflow-hidden bg-surface-primary min-w-0 relative">
+				<main id="main-content" tabindex="-1" class="flex-1 overflow-hidden bg-surface-primary min-w-0 relative outline-none">
 					{#if mainContent}
 						{@render mainContent()}
 					{/if}

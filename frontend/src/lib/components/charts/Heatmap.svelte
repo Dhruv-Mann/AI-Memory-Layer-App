@@ -132,7 +132,14 @@
 		</button>
 	</div>
 	<div class="relative animate-in fade-in duration-normal" style="height: {height}px;">
-		<svg width="100%" {height}>
+		<svg 
+			width="100%" 
+			{height}
+			role="img"
+			aria-label="Activity heatmap showing revision strength and focus areas"
+		>
+			<title>Revision Heatmap</title>
+			<desc>A grid-based heatmap visualizing study frequency and memory retention strength across categories.</desc>
 			<g transform={`translate(${margin.left},${margin.top})`}>
 				<!-- Y Axis labels -->
 				{#if yScale}
