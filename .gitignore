@@ -13,8 +13,6 @@ Thumbs.db
 
 # Private User Notes & Data (Full Privacy)
 *.md
-!PROJECT_BRAIN.md
-!README.md
 local_data/
 *.db
 *.sqlite
