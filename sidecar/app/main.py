@@ -8,6 +8,10 @@ app = FastAPI(title="AI Memory Layer API", version="1.0.0")
 # Local Ollama endpoint running on default port
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
+@app.get("/")
+async def root():
+    return {"message": "AI Memory Layer API is running. Go to /docs to test the endpoints!"}
+
 @app.post("/ingest")  # This is a 'POST' network route which is used to save new docs or notes into the local AI memory 
 async def ingest_memory(doc: DocumentIngest): # It expects incoming data to strictly match the DocumentIngest format
     """Takes text, generates embeddings, and saves to LanceDB."""
@@ -25,13 +29,19 @@ async def ingest_memory(doc: DocumentIngest): # It expects incoming data to stri
 @app.post("/chat", response_model=ChatResponse) # whatever this endpoint returns will match your strict ChatResponse format
 async def chat_with_memory(query: ChatQuery): 
     """Retrieves relevant memory chunks and asks Ollama to generate an answer."""
+    print(f"\n--- New Chat Request Received ---")
+    print(f"User Query: {query.query}")
+    
     # 1. Retrieve context vectors (RAG)
     try:
+        print("Searching LanceDB for relevant chunks...")
         relevant_chunks = search_documents(query.query, top_k=query.top_k) # this returns the most textually relevant info
+        print(f"Found {len(relevant_chunks)} chunks.")
     except Exception as e:
+        print(f"Database Error: {e}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")  # throws error if retrieve was not successful
 
-# Loops through the database search results and pastes them together into one large string block.
+    # Loops through the database search results and pastes them together into one large string block.
     context_text = "\n\n".join([f"Source ({c['source']}): {c['text']}" for c in relevant_chunks]) 
     
     # 2. Build the prompt with retrieved context
@@ -54,13 +64,17 @@ async def chat_with_memory(query: ChatQuery):
     }
 
     try:
+        print("Sending prompt to Ollama LLM (this may take a minute depending on your hardware)...")
         response = requests.post(OLLAMA_URL, json=ollama_payload)
         response.raise_for_status()
+        
         answer = response.json().get("response", "Could not generate an answer.")
+        print("Ollama successfully generated an answer!")
         
         sources = list(set([c['source'] for c in relevant_chunks]))
         return ChatResponse(answer=answer, sources=sources)
     except requests.exceptions.RequestException as e:
+        print(f"Ollama Error: {e}")
         raise HTTPException(status_code=503, detail="Could not connect to local Ollama. Is the Ollama daemon running?")
 
 if __name__ == "__main__":

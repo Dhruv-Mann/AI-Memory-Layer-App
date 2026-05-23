@@ -1,18 +1,14 @@
 from sentence_transformers import SentenceTransformer  # allows us to run open source text embeddings locally
 import time
 
+# Cache the model globally so we don't reload it for every single chunk
+print("Initializing Embedding Engine...")
+EMBEDDING_MODEL = SentenceTransformer("nomic-ai/nomic-embed-text-v2-moe", trust_remote_code=True)
+
 def generate_embedding(text: str):  # the main utility function which accepts string parameter.
-    print(f"Loading embedding model... (This might take a minute the first time to download)")
-    
-    # We are using 'nomic-embed-text-v2-moe'
-    # trust_remote_code=True is required for Nomic models via sentence-transformers.
-    model = SentenceTransformer("nomic-ai/nomic-embed-text-v2-moe", trust_remote_code=True)
-    
-    print(f"\nModel loaded! Embedding text: '{text}'")
-    
     # Generate the vector
     start_time = time.time()  # starting the timer
-    vector = model.encode(text)  # starting the embedding
+    vector = EMBEDDING_MODEL.encode(text)  # starting the embedding
     end_time = time.time()  # stopping the timer
     
     print(f"\nSuccess! Generated a vector with {len(vector)} dimensions.") # tells the vector dimensions(768)
