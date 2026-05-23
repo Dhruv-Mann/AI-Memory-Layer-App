@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+declare const process: { env: { CI?: string } };
+
 /**
  * Playwright E2E and visual regression test configuration.
  * See https://playwright.dev/docs/test-configuration.
