@@ -9,9 +9,9 @@ def chunk_document(text: str, chunk_size: int = 1500) -> list[str]:
     
     # Configure the Recursive Splitter
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=overlap_size,
-        length_function=len,
+        chunk_size=chunk_size,  # maximum number of chatacters allowed in a chunk
+        chunk_overlap=overlap_size, # number of characters which consecutive chunks share(225)
+        length_function=len,  # measuring the chunk size
         # The recursive priority list: Paragraphs -> Lines -> Words -> Chars
         separators=["\n\n", "\n", " ", ""]
     )
