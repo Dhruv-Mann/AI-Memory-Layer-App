@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as d3Scale from 'd3-scale';
 	import * as d3Array from 'd3-array';
+	import { exportChart } from '../../utils/chartExport';
 
 	export interface BarDataItem {
 		label: string;
@@ -27,6 +28,7 @@
 	}: Props = $props();
 
 	let containerWidth = $state(400);
+	let containerRef = $state<HTMLElement | null>(null);
 
 	let innerWidth = $derived(Math.max(0, containerWidth - margin.left - margin.right));
 	let innerHeight = $derived(Math.max(0, height - margin.top - margin.bottom));
@@ -70,9 +72,27 @@
 </script>
 
 <div 
-	class="relative w-full brutal-border bg-surface-primary p-4 {className}" 
+	class="relative w-full brutal-border bg-surface-primary p-4 group/chart {className}" 
 	bind:clientWidth={containerWidth}
+	bind:this={containerRef}
 >
+	<!-- Export Options -->
+	<div class="absolute top-2 right-2 flex gap-1 z-dropdown opacity-0 group-hover/chart:opacity-100 focus-within:opacity-100 transition-opacity duration-fast">
+		<button 
+			onclick={() => containerRef && exportChart(containerRef, 'bar-chart', 'svg')} 
+			title="Export as SVG"
+			class="px-1.5 py-0.5 brutal-border bg-surface-secondary text-[8px] font-mono font-bold uppercase shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:bg-surface-tertiary hover:translate-y-[-0.5px] active:translate-y-[0.5px] transition-all"
+		>
+			SVG
+		</button>
+		<button 
+			onclick={() => containerRef && exportChart(containerRef, 'bar-chart', 'png')} 
+			title="Export as PNG"
+			class="px-1.5 py-0.5 brutal-border bg-surface-secondary text-[8px] font-mono font-bold uppercase shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:bg-surface-tertiary hover:translate-y-[-0.5px] active:translate-y-[0.5px] transition-all"
+		>
+			PNG
+		</button>
+	</div>
 	<div class="relative" style="height: {height}px;">
 		<svg width="100%" {height}>
 			<g transform={`translate(${margin.left},${margin.top})`}>
