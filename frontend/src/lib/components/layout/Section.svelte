@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { motionSlide } from '../../utils/animations';
+	import { motionSlide, gpuAccelerated } from '../../utils/animations';
 
 	interface Props {
 		title: string;
@@ -49,7 +49,11 @@
 	</div>
 	
 	{#if !collapsed}
-		<div transition:motionSlide={{ duration: 200 }} class="p-4 bg-surface-primary overflow-hidden">
+		<div 
+			transition:motionSlide={{ duration: 200 }} 
+			use:gpuAccelerated 
+			class="p-4 bg-surface-primary overflow-hidden"
+		>
 			{@render children()}
 		</div>
 	{/if}

@@ -4,10 +4,12 @@
 	import { page } from '$app/stores';
 	import { motionFade } from '$lib/utils/animations';
 	import { initWindowTracker } from '$lib/stores/windowStore';
+	import { initPerformanceMonitoring } from '$lib/utils/performance';
 
 	let { children } = $props();
 
 	$effect(() => {
+		initPerformanceMonitoring();
 		const cleanup = initWindowTracker();
 		return () => {
 			cleanup?.();

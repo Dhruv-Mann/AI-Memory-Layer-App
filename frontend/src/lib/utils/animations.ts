@@ -41,36 +41,84 @@ function isReducedMotion(): boolean {
 
 /**
  * Motion-safe Svelte fade transition wrapper.
- * Automatically respects prefers-reduced-motion.
+ * Automatically respects prefers-reduced-motion and applies GPU will-change styles.
  */
 export function motionFade(node: HTMLElement, params?: FadeParams): TransitionConfig {
 	if (isReducedMotion()) return { duration: 0 };
-	return fade(node, {
+	const config = fade(node, {
 		duration: durationNormal,
 		...params
 	});
+	return {
+		...config,
+		css: (t, u) => {
+			const originalCss = config.css ? config.css(t, u) : '';
+			return `${originalCss} will-change: opacity;`;
+		}
+	};
 }
 
 /**
  * Motion-safe Svelte slide transition wrapper.
- * Automatically respects prefers-reduced-motion.
+ * Automatically respects prefers-reduced-motion and applies GPU will-change styles.
  */
 export function motionSlide(node: HTMLElement, params?: SlideParams): TransitionConfig {
 	if (isReducedMotion()) return { duration: 0 };
-	return slide(node, {
+	const config = slide(node, {
 		duration: durationNormal,
 		...params
 	});
+	return {
+		...config,
+		css: (t, u) => {
+			const originalCss = config.css ? config.css(t, u) : '';
+			return `${originalCss} will-change: transform, opacity;`;
+		}
+	};
 }
 
 /**
  * Motion-safe Svelte fly transition wrapper.
- * Automatically respects prefers-reduced-motion.
+ * Automatically respects prefers-reduced-motion and applies GPU will-change styles.
  */
 export function motionFly(node: HTMLElement, params?: FlyParams): TransitionConfig {
 	if (isReducedMotion()) return { duration: 0 };
-	return fly(node, {
+	const config = fly(node, {
 		duration: durationNormal,
 		...params
 	});
+	return {
+		...config,
+		css: (t, u) => {
+			const originalCss = config.css ? config.css(t, u) : '';
+			return `${originalCss} will-change: transform, opacity;`;
+		}
+	};
+}
+
+/**
+ * Reusable Svelte Action that temporarily applies will-change styling during
+ * active animation or transition cycles and cleans it up once completed.
+ */
+export function gpuAccelerated(node: HTMLElement) {
+	const handleStart = () => {
+		node.style.willChange = 'transform, opacity';
+	};
+	const handleEnd = () => {
+		node.style.willChange = '';
+	};
+
+	node.addEventListener('animationstart', handleStart);
+	node.addEventListener('animationend', handleEnd);
+	node.addEventListener('transitionstart', handleStart);
+	node.addEventListener('transitionend', handleEnd);
+
+	return {
+		destroy() {
+			node.removeEventListener('animationstart', handleStart);
+			node.removeEventListener('animationend', handleEnd);
+			node.removeEventListener('transitionstart', handleStart);
+			node.removeEventListener('transitionend', handleEnd);
+		}
+	};
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { motionSlide } from '../../utils/animations';
+	import { motionSlide, gpuAccelerated } from '../../utils/animations';
 	import Button from '../primitives/Button.svelte';
 	import KeyboardHint from '../primitives/KeyboardHint.svelte';
 
@@ -113,6 +113,7 @@
 		<div 
 			class="border-t-2 border-border-base bg-surface-secondary/20 block"
 			transition:motionSlide={{ duration: 200 }}
+			use:gpuAccelerated
 		>
 			<div class="p-4 font-mono text-sm text-content-primary leading-relaxed whitespace-pre-wrap">
 				{data.fullContext}

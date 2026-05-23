@@ -5,9 +5,17 @@
 	import type { FilterState } from '../composite/SearchFilters.svelte';
 	
 	import ForgottenTopicCard from './ForgottenTopicCard.svelte';
-	import ActivityHeatmap from './ActivityHeatmap.svelte';
-	import MasteryEvolutionChart from './MasteryEvolutionChart.svelte';
-	import MemoryDecayChart from './MemoryDecayChart.svelte';
+
+	// Lazy load heavy chart components
+	let ActivityHeatmap = $state<any>(null);
+	let MasteryEvolutionChart = $state<any>(null);
+	let MemoryDecayChart = $state<any>(null);
+
+	$effect(() => {
+		import('./ActivityHeatmap.svelte').then(m => ActivityHeatmap = m.default);
+		import('./MasteryEvolutionChart.svelte').then(m => MasteryEvolutionChart = m.default);
+		import('./MemoryDecayChart.svelte').then(m => MemoryDecayChart = m.default);
+	});
 
 	interface Props {
 		topicsDue: number;
@@ -158,18 +166,36 @@
 			<div class="xl:col-span-8 flex flex-col gap-8">
 				
 				<!-- ROW 1: Heatmap -->
-				<section class="bg-surface-primary brutal-border p-6 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
-					<ActivityHeatmap data={heatmapData} />
+				<section class="bg-surface-primary brutal-border p-6 shadow-[4px_4px_0px_rgba(0,0,0,1)] min-h-[250px] flex flex-col justify-center">
+					{#if ActivityHeatmap}
+						<ActivityHeatmap data={heatmapData} />
+					{:else}
+						<div class="h-48 w-full animate-pulse bg-surface-secondary flex flex-col items-center justify-center font-mono font-bold text-xs uppercase text-content-tertiary">
+							<span>Loading Activity Heatmap...</span>
+						</div>
+					{/if}
 				</section>
 				
 				<!-- ROW 2: Charts Grid -->
 				<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-					<section class="shadow-[4px_4px_0px_rgba(0,0,0,1)]">
-						<MasteryEvolutionChart series={evolutionSeries} />
+					<section class="shadow-[4px_4px_0px_rgba(0,0,0,1)] min-h-[280px] bg-surface-primary brutal-border p-6 flex flex-col justify-center">
+						{#if MasteryEvolutionChart}
+							<MasteryEvolutionChart series={evolutionSeries} />
+						{:else}
+							<div class="h-56 w-full animate-pulse bg-surface-secondary flex flex-col items-center justify-center font-mono font-bold text-xs uppercase text-content-tertiary">
+								<span>Loading Mastery Evolution...</span>
+							</div>
+						{/if}
 					</section>
 
-					<section class="shadow-[4px_4px_0px_rgba(0,0,0,1)]">
-						<MemoryDecayChart curves={decayCurves} currentDay={5} />
+					<section class="shadow-[4px_4px_0px_rgba(0,0,0,1)] min-h-[280px] bg-surface-primary brutal-border p-6 flex flex-col justify-center">
+						{#if MemoryDecayChart}
+							<MemoryDecayChart curves={decayCurves} currentDay={5} />
+						{:else}
+							<div class="h-56 w-full animate-pulse bg-surface-secondary flex flex-col items-center justify-center font-mono font-bold text-xs uppercase text-content-tertiary">
+								<span>Loading Memory Decay...</span>
+							</div>
+						{/if}
 					</section>
 				</div>
 				
