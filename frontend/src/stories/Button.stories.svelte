@@ -1,31 +1,55 @@
+<!-- Button.stories.svelte -->
 <script module>
-  import { defineMeta } from '@storybook/addon-svelte-csf';
-  import Button from './Button.svelte';
-  import { fn } from 'storybook/test';
+    import { defineMeta } from '@storybook/addon-svelte-csf';
+    import Button from '../lib/components/primitives/Button.svelte';
 
-  // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
-  const { Story } = defineMeta({
-    title: 'Example/Button',
-    component: Button,
-    tags: ['autodocs'],
-    argTypes: {
-      backgroundColor: { control: 'color' },
-      size: {
-        control: { type: 'select' },
-        options: ['small', 'medium', 'large'],
-      },
-    },
-    args: {
-      onclick: fn(),
-    }
-  });
+    const { Story } = defineMeta({
+        title: 'Primitives/Button',
+        component: Button,
+        argTypes: {
+            variant: {
+                control: { type: 'select' },
+                options: ['primary', 'secondary', 'ghost', 'danger', 'icon'],
+            },
+            size: {
+                control: { type: 'select' },
+                options: ['sm', 'md', 'lg'],
+            },
+            disabled: { control: 'boolean' },
+            loading: { control: 'boolean' },
+            fullWidth: { control: 'boolean' },
+        },
+    });
 </script>
 
-<!-- More on writing stories with args: https://storybook.js.org/docs/writing-stories/args -->
-<Story name="Primary" args={{ primary: true, label: 'Button' }} />
+<Story name="Primary">
+    <Button variant="primary">Primary Button</Button>
+</Story>
 
-<Story name="Secondary" args={{ label: 'Button' }} />
+<Story name="Secondary">
+    <Button variant="secondary">Secondary Button</Button>
+</Story>
 
-<Story name="Large" args={{ size: 'large', label: 'Button' }} />
+<Story name="Danger">
+    <Button variant="danger">Danger Button</Button>
+</Story>
 
-<Story name="Small" args={{ size: 'small', label: 'Button' }} />
+<Story name="Ghost">
+    <Button variant="ghost">Ghost Button</Button>
+</Story>
+
+<Story name="Sizes">
+    <div class="flex gap-4 items-center">
+        <Button size="sm">Small</Button>
+        <Button size="md">Medium</Button>
+        <Button size="lg">Large</Button>
+    </div>
+</Story>
+
+<Story name="States">
+    <div class="flex flex-col gap-4 items-start">
+        <Button disabled>Disabled Button</Button>
+        <Button loading>Loading State</Button>
+        <Button fullWidth>Full Width Button</Button>
+    </div>
+</Story>
