@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/svelte';
 import Card from '../lib/components/layout/Card.svelte';
 import Button from '../lib/components/primitives/Button.svelte';
-import { snippet } from 'svelte';
+import { createRawSnippet } from 'svelte';
 
 const meta = {
 	title: 'Layout/Card',
@@ -13,11 +13,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-    render: () => ({
-        Component: Card,
-        props: {
-            // Svelte 5 children snippet workaround for Storybook
-            children: snippet(() => `<h3 class="text-xl font-bold mb-2">Card Title</h3><p>This is a brutalist card.</p>`) as any
-        }
-    })
+    args: {
+        children: createRawSnippet(() => ({ render: () => `<h3 class="text-xl font-bold mb-2">Card Title</h3><p>This is a brutalist card.</p>` })) as any
+    }
 };

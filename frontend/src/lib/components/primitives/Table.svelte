@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script module lang="ts">
 	export interface TableColumn {
 		key: string;
 		label: string;
@@ -51,12 +51,11 @@
 </script>
 
 <div class="w-full overflow-x-auto brutal-border bg-surface-primary {className}">
-	<table role="table" class="w-full text-sm tracking-tight text-left border-collapse">
+	<table class="w-full text-sm tracking-tight text-left border-collapse">
 		<thead class="bg-surface-secondary border-b-2 border-primary">
-			<tr role="row">
+			<tr>
 				{#each columns as col}
 					<th 
-						role="columnheader" 
 						aria-sort={sortKey === col.key ? (sortDirection === 'asc' ? 'ascending' : 'descending') : undefined}
 						class="px-4 py-2 font-bold uppercase text-fg-primary leading-compact select-none"
 						class:cursor-pointer={col.sortable}
@@ -85,12 +84,11 @@
 				{/each}
 			</tr>
 		</thead>
-		<tbody class="divide-y-2 divide-surface-tertiary" role="rowgroup">
+		<tbody class="divide-y-2 divide-surface-tertiary">
 			{#each data as row}
-				<tr role="row" class="hover:bg-surface-secondary transition-colors duration-fast">
+				<tr class="hover:bg-surface-secondary transition-colors duration-fast">
 					{#each columns as col}
 						<td 
-							role="cell" 
 							class="px-4 py-1.5 leading-compact text-fg-primary whitespace-nowrap"
 							class:text-center={col.align === 'center'}
 							class:text-right={col.align === 'right'}
@@ -107,8 +105,8 @@
 		</tbody>
 		{#if footer}
 			<tfoot class="bg-surface-tertiary border-t-2 border-primary font-bold text-fg-primary px-4 py-2">
-				<tr role="row">
-					<td role="cell" colspan={columns.length} class="px-4 py-2">
+				<tr>
+					<td colspan={columns.length} class="px-4 py-2">
 						{@render footer()}
 					</td>
 				</tr>

@@ -17,6 +17,9 @@
 		type?: ButtonType;
 		class?: string;
 		onclick?: (event: MouseEvent) => void;
+		'aria-label'?: string;
+		'aria-expanded'?: boolean;
+		'aria-controls'?: string;
 	}
 
 	let {
@@ -30,7 +33,10 @@
 		fullWidth = false,
 		type = 'button',
 		class: className = '',
-		onclick
+		onclick,
+		'aria-label': ariaLabel,
+		'aria-expanded': ariaExpanded,
+		'aria-controls': ariaControls
 	}: Props = $props();
 
 	// Neo-Brutalist base classes: bold borders, tight fonts, zero rounding on default
@@ -85,6 +91,9 @@
 	{disabled}
 	aria-disabled={disabled || loading}
 	aria-busy={loading}
+	aria-label={ariaLabel}
+	aria-expanded={ariaExpanded}
+	aria-controls={ariaControls}
 	class={computedClasses}
 	{onclick}
 	onkeydown={handleKeydown}

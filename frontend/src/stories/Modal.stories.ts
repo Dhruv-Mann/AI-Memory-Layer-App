@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/svelte';
 import Modal from '../lib/components/overlays/Modal.svelte';
 
+import { createRawSnippet } from 'svelte';
+
 const meta = {
 	title: 'Overlays/Modal',
 	component: Modal,
@@ -15,6 +17,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
     args: {
         open: true,
-        title: 'Confirmation'
+        title: 'Confirmation',
+        children: createRawSnippet(() => ({ render: () => `<p>Modal content</p>` })) as any
     }
 };

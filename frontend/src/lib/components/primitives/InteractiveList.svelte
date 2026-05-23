@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script module lang="ts">
 	export interface InteractiveListItem {
 		id: string | number;
 		label: string;
@@ -36,7 +36,8 @@
 
 		if (newIndex !== index) {
 			e.preventDefault();
-			const list = e.currentTarget?.parentElement;
+			const target = e.currentTarget as HTMLElement | null;
+			const list = target?.parentElement;
 			if (list) {
 				const itemsEl = list.querySelectorAll('li');
 				(itemsEl[newIndex] as HTMLElement)?.focus();

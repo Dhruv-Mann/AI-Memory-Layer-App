@@ -22,9 +22,9 @@
 		lg: 'p-6'
 	};
 	
-	const typeClasses = type === 'outer' 
+	let typeClasses = $derived(type === 'outer' 
 		? 'brutal-border bg-surface-secondary' 
-		: 'border-2 border-primary bg-surface-primary';
+		: 'border-2 border-primary bg-surface-primary');
 </script>
 
 <div class="{typeClasses} {paddingMap[padding]} {className}">

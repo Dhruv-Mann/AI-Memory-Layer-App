@@ -63,16 +63,7 @@
 		>
 			{#if arrow}
 				<div
-					class="absolute w-2 h-2 bg-fg-primary"
-					class:bottom-[-4px]={placement === 'top'}
-					class:left-1/2={placement === 'top' || placement === 'bottom'}
-					class:-translate-x-1/2={placement === 'top' || placement === 'bottom'}
-					class:rotate-45={true}
-					class:top-[-4px]={placement === 'bottom'}
-					class:right-[-4px]={placement === 'left'}
-					class:top-1/2={placement === 'left' || placement === 'right'}
-					class:-translate-y-1/2={placement === 'left' || placement === 'right'}
-					class:left-[-4px]={placement === 'right'}
+					class="absolute w-2 h-2 bg-fg-primary rotate-45 {placement === 'top' ? 'bottom-[-4px] left-1/2 -translate-x-1/2' : ''} {placement === 'bottom' ? 'top-[-4px] left-1/2 -translate-x-1/2' : ''} {placement === 'left' ? 'right-[-4px] top-1/2 -translate-y-1/2' : ''} {placement === 'right' ? 'left-[-4px] top-1/2 -translate-y-1/2' : ''}"
 				></div>
 			{/if}
 			<span class="relative z-10">{content}</span>

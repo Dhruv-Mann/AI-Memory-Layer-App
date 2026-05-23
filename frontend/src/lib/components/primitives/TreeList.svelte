@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script module lang="ts">
 	export interface TreeItem {
 		id: string;
 		label: string;
@@ -8,6 +8,8 @@
 </script>
 
 <script lang="ts">
+	import TreeList from './TreeList.svelte';
+
 	interface Props {
 		items: TreeItem[];
 		level?: number;
@@ -36,8 +38,9 @@
 
 <ul class="flex flex-col {level === 0 ? className : ''}" role={level === 0 ? 'tree' : 'group'}>
 	{#each items as item (item.id)}
-		<li class="flex flex-col" role="treeitem" aria-expanded={item.children ? !!item.expanded : undefined}>
+		<li class="flex flex-col" role="treeitem" aria-selected="false" aria-expanded={item.children ? !!item.expanded : undefined}>
 			<div 
+				role="button"
 				class="flex items-center gap-2 py-1.5 px-2 hover:bg-surface-secondary cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-primary border-l-2 border-transparent hover:border-brand-primary transition-all select-none"
 				style="padding-left: {level * 1.5 + 0.5}rem"
 				tabindex="0"
@@ -55,7 +58,7 @@
 			</div>
 			
 			{#if item.children && item.expanded}
-				<svelte:self bind:items={item.children} level={level + 1} />
+				<TreeList bind:items={item.children} level={level + 1} />
 			{/if}
 		</li>
 	{/each}

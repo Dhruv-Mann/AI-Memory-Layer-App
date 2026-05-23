@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script module lang="ts">
 	export interface TabItem {
 		id: string;
 		label: string;
@@ -35,7 +35,8 @@
 
 		if (newIndex !== index) {
 			activeId = items[newIndex].id;
-			const list = e.currentTarget?.parentElement;
+			const target = e.currentTarget as HTMLElement | null;
+			const list = target?.parentElement;
 			if (list) {
 				const btns = list.querySelectorAll('button[role="tab"]');
 				(btns[newIndex] as HTMLElement)?.focus();

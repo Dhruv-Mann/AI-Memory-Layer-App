@@ -86,7 +86,7 @@
 		}
 	};
 
-	const isHorizontal = position === 'left' || position === 'right';
+	let isHorizontal = $derived(position === 'left' || position === 'right');
 	let computedWidthHeight = $derived(
 		isHorizontal ? sizeClasses.horizontal[size] : sizeClasses.vertical[size]
 	);
