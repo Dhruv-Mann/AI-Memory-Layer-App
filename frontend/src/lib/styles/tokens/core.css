@@ -228,3 +228,13 @@
     outline: 2px solid ButtonText !important;
   }
 }
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  :root {
+    font-size: 105%;
+  }
+}
+
+html, body {
+  background-color: var(--bg-secondary);
+}

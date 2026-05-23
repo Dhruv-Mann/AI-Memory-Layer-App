@@ -20,10 +20,34 @@
 		commandBar
 	}: Props = $props();
 
+	import { browser } from '$app/environment';
+
 	let storeParams = $derived($layoutStore);
+	let lastWidth = browser ? window.innerWidth : 1920;
+
+	$effect(() => {
+		if (!browser) return;
+
+		const handleResize = () => {
+			const currentWidth = window.innerWidth;
+			if (currentWidth < 1280 && lastWidth >= 1280) {
+				if (storeParams.auxiliaryPanel.visible && !storeParams.auxiliaryPanel.collapsed) {
+					layoutStore.updatePanel('auxiliaryPanel', { collapsed: true });
+				}
+			}
+			lastWidth = currentWidth;
+		};
+
+		window.addEventListener('resize', handleResize);
+		handleResize();
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	});
 </script>
 
-<div class="w-full h-screen overflow-hidden flex flex-col bg-surface-base text-content-primary">
+<div class="w-full h-screen overflow-hidden flex flex-col bg-surface-base text-content-primary 3xl:max-w-[1920px] 3xl:h-[calc(100vh-4rem)] 3xl:my-8 3xl:mx-auto 3xl:brutal-border 3xl:shadow-lg">
 	<!-- Accessibility Skip Links -->
 	<SkipLink targetId="main-content" label="Skip to main content" />
 	{#if storeParams.sidebar.visible && sidebar}

@@ -3,8 +3,16 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { page } from '$app/stores';
 	import { motionFade } from '$lib/utils/animations';
+	import { initWindowTracker } from '$lib/stores/windowStore';
 
 	let { children } = $props();
+
+	$effect(() => {
+		const cleanup = initWindowTracker();
+		return () => {
+			cleanup?.();
+		};
+	});
 </script>
 
 <svelte:head>
