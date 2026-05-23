@@ -6,4 +6,5 @@
   @import './lib/styles/tokens/core.css';
   @import './lib/styles/tokens/semantic.css';
   @import './lib/styles/tokens/component.css';
+  @import './lib/styles/typography.css';
 }

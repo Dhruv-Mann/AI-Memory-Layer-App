@@ -1,0 +1,48 @@
+import { Meta } from '@storybook/addon-docs';
+
+<Meta title="Design System/Typography" />
+
+# Typography System
+
+Our neo-brutalist typography system relies on stark contrasts, distinct hierarchies, and tight tracking to reinforce the data-dense, developer-tool aesthetic.
+
+## Font Stacks
+**Sans-serif (UI default):** Clean, system-native sans-serif fonts for optimal readability and zero-layout shift.
+**Monospace (Code & Data):** Fixed-width fonts used for JSON chunks, memory IDs, and strict data displays.
+
+## Guidelines & Pairings
+- **Headings** should always use `font-bold` and `tracking-tight` with a `leading-compact` line height to feel dense and blocky.
+- **Body text** should be `font-regular` and `leading-normal` to ensure readability over long passages.
+- **Data labels** should be `text-xs`, `font-bold`, uppercase, and `tracking-wide`.
+
+## Type Scales
+
+Here is a visual scale of the typography available:
+
+<div className="rhythm bg-gray-100 p-8 brutal-border brutal-shadow-lg mt-6 text-black">
+  <div className="font-sans">
+    <div className="text-4xl font-bold tracking-tight leading-compact">Heading 4XL</div>
+    <div className="text-3xl font-bold tracking-tight leading-compact">Heading 3XL</div>
+    <div className="text-2xl font-semibold tracking-tight leading-compact">Heading 2XL</div>
+    <div className="text-xl font-semibold tracking-tight leading-compact">Heading XL</div>
+    <div className="text-lg font-medium leading-compact">Subtitle LG</div>
+    <div className="text-base font-regular leading-normal">Body Base - This is what standard paragraph text looks like when reading through long chunks of memory data.</div>
+    <div className="text-sm font-regular leading-normal">Body SM - Used for secondary text or lesser metadata.</div>
+    <div className="text-xs font-bold uppercase tracking-wide">Micro XS - Used for labels and statuses</div>
+  </div>
+</div>
+
+## Code Examples
+
+**Standard Article Layout:**
+```html
+<article class="rhythm font-sans">
+  <h1 class="text-3xl font-bold tracking-tight leading-compact">Memory Ingestion</h1>
+  <p class="text-base font-regular leading-normal text-secondary">
+    This process splits raw Markdown into distinct manageable pieces.
+  </p>
+  <div class="font-mono text-xs bg-gray-200 p-4 brutal-border">
+    ID: 9abc4e82-1863-439f-9d35-238f622d5f58
+  </div>
+</article>
+```
