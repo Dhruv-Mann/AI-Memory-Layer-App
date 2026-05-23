@@ -1,0 +1,97 @@
+<script lang="ts">
+	import type { Snippet } from 'svelte';
+
+	interface Props {
+		open?: boolean;
+		placement?: 'top' | 'bottom' | 'left' | 'right';
+		offset?: number;
+		arrow?: boolean;
+		trigger: Snippet;
+		content: Snippet;
+	}
+
+	let {
+		open = $bindable(false),
+		placement = 'bottom',
+		offset = 8,
+		arrow = true,
+		trigger,
+		content
+	}: Props = $props();
+
+	let triggerEl: HTMLDivElement;
+	let popoverEl: HTMLDivElement;
+    
+	function toggle() {
+		open = !open;
+	}
+	
+	function close() {
+		open = false;
+	}
+
+	// Click outside to close
+	function handleClickOutside(event: MouseEvent) {
+		if (open && popoverEl && !popoverEl.contains(event.target as Node) && triggerEl && !triggerEl.contains(event.target as Node)) {
+			close();
+		}
+	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape' && open) {
+			close();
+		}
+	}
+</script>
+
+<svelte:window onclick={handleClickOutside} onkeydown={handleKeydown} />
+
+<div class="relative inline-block" bind:this={triggerEl}>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div onclick={toggle}>
+		{@render trigger()}
+	</div>
+
+	{#if open}
+		<div
+			bind:this={popoverEl}
+			class="absolute z-dropdown brutal-card p-4 min-w-[200px] animate-in fade-in zoom-in-95 duration-fast"
+			class:bottom-full={placement === 'top'}
+			class:mb-2={placement === 'top'}
+			class:top-full={placement === 'bottom'}
+			class:mt-2={placement === 'bottom'}
+			class:right-full={placement === 'left'}
+			class:mr-2={placement === 'left'}
+			class:left-full={placement === 'right'}
+			class:ml-2={placement === 'right'}
+			style="
+				--tw-translate-x: {placement === 'left' || placement === 'right' ? '0' : '-50%'};
+				--tw-translate-y: {placement === 'top' || placement === 'bottom' ? '0' : '-50%'};
+				left: {placement === 'top' || placement === 'bottom' ? '50%' : 'auto'};
+				transform: translate(var(--tw-translate-x), var(--tw-translate-y));
+			"
+		>
+			{#if arrow}
+				<div
+					class="absolute w-3 h-3 bg-surface-primary border-t-2 border-l-2 border-primary"
+					class:bottom-[-7px]={placement === 'top'}
+					class:left-1/2={placement === 'top' || placement === 'bottom'}
+					class:-translate-x-1/2={placement === 'top' || placement === 'bottom'}
+					class:rotate-[-135deg]={placement === 'top'}
+					class:top-[-7px]={placement === 'bottom'}
+					class:rotate-[45deg]={placement === 'bottom'}
+					class:right-[-7px]={placement === 'left'}
+					class:top-1/2={placement === 'left' || placement === 'right'}
+					class:-translate-y-1/2={placement === 'left' || placement === 'right'}
+					class:rotate-[135deg]={placement === 'left'}
+					class:left-[-7px]={placement === 'right'}
+					class:rotate-[-45deg]={placement === 'right'}
+				></div>
+			{/if}
+			<div class="relative z-10">
+				{@render content()}
+			</div>
+		</div>
+	{/if}
+</div>
