@@ -1,0 +1,106 @@
+:root {
+  /* 
+   * Neutral Gray Palette (0-900) - 10 stops 
+   * Crisp and stark grays suitable for neo-brutalism
+   */
+  --color-gray-50:  #fafafa;
+  --color-gray-100: #f4f4f5;
+  --color-gray-200: #e4e4e7;
+  --color-gray-300: #d4d4d8;
+  --color-gray-400: #a1a1aa;
+  --color-gray-500: #71717a;
+  --color-gray-600: #52525b;
+  --color-gray-700: #3f3f46;
+  --color-gray-800: #27272a;
+  --color-gray-900: #18181b;
+
+  /* Base Colors */
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  /* Brand Colors - Restrained but high-contrast palette */
+  --color-primary:   #2563eb;
+  --color-secondary: #7c3aed;
+  --color-accent:    #db2777;
+
+  /* Semantic Colors (light, base, dark) */
+  --color-success-light: #dcfce7;
+  --color-success-base:  #22c55e;
+  --color-success-dark:  #15803d;
+
+  --color-warning-light: #fef08a;
+  --color-warning-base:  #eab308;
+  --color-warning-dark:  #a16207;
+
+  --color-error-light:   #fee2e2;
+  --color-error-base:    #ef4444;
+  --color-error-dark:    #b91c1c;
+
+  --color-info-light:    #e0f2fe;
+  --color-info-base:     #0ea5e9;
+  --color-info-dark:     #0369a1;
+
+  /* Memory State Colors */
+  --color-state-not-learned:  var(--color-gray-400);
+  --color-state-learning:     var(--color-info-base);
+  --color-state-mastered:     var(--color-success-base);
+  --color-state-forgotten:    var(--color-error-base);
+  --color-state-revision-due: var(--color-warning-base);
+
+  /* Revision Urgency Colors */
+  --color-urgency-low:      var(--color-info-base);
+  --color-urgency-medium:   var(--color-warning-base);
+  --color-urgency-high:     #f97316; /* distinct vivid orange */
+  --color-urgency-critical: var(--color-error-base);
+
+  /* Spacing Scale (4px base unit) */
+  --space-0:   0px;
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-24:  96px;
+  --space-32:  128px;
+
+  /* Typography Scale (1.25 ratio) */
+  --text-xs:   0.8rem;
+  --text-sm:   1rem;       /* 16px */
+  --text-base: 1.25rem;    /* 20px */
+  --text-lg:   1.563rem;   /* 25px */
+  --text-xl:   1.953rem;   /* 31.25px */
+  --text-2xl:  2.441rem;   /* 39px */
+  --text-3xl:  3.052rem;   /* 48.8px */
+  --text-4xl:  3.815rem;   /* 61px */
+
+  /* Neo-Brutalist Hard Shadow Values */
+  --shadow-sm: 2px 2px 0px var(--color-black);
+  --shadow-md: 4px 4px 0px var(--color-black);
+  --shadow-lg: 6px 6px 0px var(--color-black);
+  --shadow-xl: 8px 8px 0px var(--color-black);
+
+  /* Border Radius Values */
+  --border-radius-none: 0px;
+  --border-radius-sm:   2px;
+  --border-radius-md:   4px;
+  --border-radius-lg:   8px;
+
+  /* Animation */
+  --anim-duration-fast: 150ms;
+  --anim-duration-base: 300ms;
+  --anim-duration-slow: 500ms;
+  --anim-ease-brutal:   cubic-bezier(0.2, 1, 0.2, 1); /* Snappy and direct */
+
+  /* Z-Index Layers */
+  --z-base:            0;
+  --z-dropdown:        40;
+  --z-sticky:          50;
+  --z-panel:           60;
+  --z-modal:           70;
+  --z-tooltip:         80;
+  --z-command-palette: 90;
+  --z-notification:    100;
+}

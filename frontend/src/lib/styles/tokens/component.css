@@ -1,0 +1,36 @@
+@import './semantic.css';
+
+:root {
+  /* Buttons */
+  --btn-bg-default: var(--bg-primary);
+  --btn-bg-hover:   var(--bg-secondary);
+  --btn-bg-active:  var(--bg-tertiary);
+  --btn-text:       var(--text-primary);
+  
+  --btn-border:     var(--border-width) solid var(--border-primary);
+  --btn-shadow:     var(--shadow-sm);
+  --btn-shadow-hover: var(--shadow-md);
+  
+  --btn-pad-y:      var(--space-2);
+  --btn-pad-x:      var(--space-4);
+
+  /* Cards / Panels */
+  --card-bg:        var(--bg-primary);
+  --card-border:    var(--border-width) solid var(--border-primary);
+  --card-shadow:    var(--shadow-default);
+  --card-pad:       var(--space-4);
+
+  /* Inputs / Forms */
+  --input-bg:       var(--bg-primary);
+  --input-border:   var(--border-width) solid var(--border-primary);
+  --input-text:     var(--text-primary);
+  --input-pad-y:    var(--space-2);
+  --input-pad-x:    var(--space-3);
+  --input-focus-ring: 2px solid var(--color-primary);
+  
+  /* Tooltips */
+  --tooltip-bg:     var(--bg-inverse);
+  --tooltip-text:   var(--text-inverse);
+  --tooltip-pad-y:  var(--space-1);
+  --tooltip-pad-x:  var(--space-2);
+}

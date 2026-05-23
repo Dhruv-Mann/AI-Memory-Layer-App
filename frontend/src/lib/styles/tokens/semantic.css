@@ -1,0 +1,25 @@
+@import './core.css';
+
+:root {
+  /* Surface / Backgrounds */
+  --bg-primary:   var(--color-white);
+  --bg-secondary: var(--color-gray-100);
+  --bg-tertiary:  var(--color-gray-200);
+  --bg-inverse:   var(--color-black);
+
+  /* Foreground / Text */
+  --text-primary:   var(--color-black);
+  --text-secondary: var(--color-gray-700);
+  --text-tertiary:  var(--color-gray-500);
+  --text-inverse:   var(--color-white);
+
+  /* Borders / Lines (Thick defaults for brutalism) */
+  --border-primary:   var(--color-black);
+  --border-secondary: var(--color-gray-400);
+  --border-width:     2px;
+
+  /* Global Primitive Assignments */
+  --radius-default: var(--border-radius-none); /* Brutalism typically lacks rounding */
+  --shadow-default: var(--shadow-md);
+  
+}

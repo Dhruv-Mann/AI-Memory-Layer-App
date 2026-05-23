@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @import './lib/styles/tokens/core.css';
+  @import './lib/styles/tokens/semantic.css';
+  @import './lib/styles/tokens/component.css';
+}
