@@ -94,7 +94,12 @@
 				{/if}
 			</div>
 			{#if showCloseButton}
-				<Button variant="ghost" size="sm" onclick={handleClose} aria-label="Close dialog">✕</Button>
+				<div class="flex items-center gap-2">
+					{#if closeOnEscape}
+						<span class="text-xs text-content-tertiary font-mono hidden sm:inline-block">ESC</span>
+					{/if}
+					<Button variant="ghost" size="sm" onclick={handleClose} aria-label="Close dialog">✕</Button>
+				</div>
 			{/if}
 		</div>
 	{/if}

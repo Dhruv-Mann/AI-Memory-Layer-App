@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { ComponentSize } from '$lib/types/tokens';
+	import KeyboardHint from './KeyboardHint.svelte';
 
 	type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'icon';
 	type ButtonType = 'button' | 'submit' | 'reset';
@@ -16,6 +17,7 @@
 		fullWidth?: boolean;
 		type?: ButtonType;
 		class?: string;
+		keyboardHint?: string[];
 		onclick?: (event: MouseEvent) => void;
 		'aria-label'?: string;
 		'aria-expanded'?: boolean;
@@ -33,6 +35,7 @@
 		fullWidth = false,
 		type = 'button',
 		class: className = '',
+		keyboardHint,
 		onclick,
 		'aria-label': ariaLabel,
 		'aria-expanded': ariaExpanded,
@@ -123,4 +126,8 @@
             {@render icon()}
         </span>
     {/if}
+
+	{#if keyboardHint}
+		<KeyboardHint keys={keyboardHint} class="ml-2" />
+	{/if}
 </button>
