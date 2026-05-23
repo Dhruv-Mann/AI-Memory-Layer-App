@@ -13,12 +13,15 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"test:visual": "playwright test",
+		"test:visual:update": "playwright test --update-snapshots"
 	},
 	"devDependencies": {
 		"@chromatic-com/storybook": "^5.2.1",
 		"@eslint/compat": "^2.0.4",
 		"@eslint/js": "^10.0.1",
+		"@playwright/test": "^1.60.0",
 		"@storybook/addon-a11y": "^10.4.1",
 		"@storybook/addon-docs": "^10.4.1",
 		"@storybook/addon-svelte-csf": "^5.1.2",
