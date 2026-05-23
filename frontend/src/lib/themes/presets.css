@@ -1,0 +1,84 @@
+@layer base {
+
+  /* Dark Theme Overrides */
+  :root[data-theme="dark"] {
+    --bg-primary:   var(--color-gray-900);
+    --bg-secondary: var(--color-gray-800);
+    --bg-tertiary:  var(--color-gray-700);
+    --bg-inverse:   var(--color-white);
+
+    --text-primary:   var(--color-white);
+    --text-secondary: var(--color-gray-300);
+    --text-tertiary:  var(--color-gray-400);
+    --text-inverse:   var(--color-black);
+
+    --border-primary:   var(--color-white);
+    --border-secondary: var(--color-gray-500);
+
+    /* Modify shadows to pop aggressively against dark backdrops */
+    --shadow-sm: 2px 2px 0px var(--color-white);
+    --shadow-md: 4px 4px 0px var(--color-white);
+    --shadow-lg: 6px 6px 0px var(--color-white);
+    --shadow-xl: 8px 8px 0px var(--color-white);
+  }
+
+  /* Monochrome Theme Overrides */
+  :root[data-theme="monochrome"] {
+    /* Mute out brand/semantic colors */
+    --color-primary:   var(--color-gray-800);
+    --color-secondary: var(--color-gray-700);
+    --color-accent:    var(--color-gray-600);
+
+    --color-success-base:  var(--color-gray-600);
+    --color-error-base:    var(--color-gray-800);
+    --color-warning-base:  var(--color-gray-500);
+    --color-info-base:     var(--color-gray-700);
+  }
+
+  /* Terminal Theme Overrides */
+  :root[data-theme="terminal"] {
+    --bg-primary:   #000000;
+    --bg-secondary: #111111;
+    --bg-tertiary:  #222222;
+    --bg-inverse:   #00ff00;
+
+    --text-primary:   #00ff00;
+    --text-secondary: #00cc00;
+    --text-tertiary:  #008800;
+    --text-inverse:   #000000;
+
+    --border-primary:   #00ff00;
+    --border-secondary: #008800;
+
+    /* Overwrite fonts entirely to monospace */
+    --font-sans: var(--font-mono);
+
+    --shadow-md: 0px 0px 0px transparent; /* No shadows in terminal */
+    --border-width: 1px;
+  }
+
+  /* Density Overrides */
+  :root[data-density="compact"] {
+    --space-1: 2px;
+    --space-2: 4px;
+    --space-3: 6px;
+    --space-4: 8px;
+    --space-6: 12px;
+    --space-8: 16px;
+    --space-12: 24px;
+    --space-16: 32px;
+    --border-width: 1px;
+  }
+
+  :root[data-density="comfortable"] {
+    --space-1: 6px;
+    --space-2: 12px;
+    --space-3: 16px;
+    --space-4: 24px;
+    --space-6: 32px;
+    --space-8: 48px;
+    --space-12: 64px;
+    --space-16: 96px;
+    --border-width: 3px;
+  }
+}

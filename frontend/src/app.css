@@ -7,4 +7,5 @@
   @import './lib/styles/tokens/semantic.css';
   @import './lib/styles/tokens/component.css';
   @import './lib/styles/typography.css';
+  @import './lib/themes/presets.css';
 }
