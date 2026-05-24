@@ -62,7 +62,8 @@ def get_connection():
         import sqlite3 as sqlite
         use_sqlcipher = False
         
-    conn = sqlite.connect(db_path)
+    conn = sqlite.connect(db_path, timeout=30.0)
+    conn.execute("PRAGMA journal_mode=WAL")
     
     if use_sqlcipher:
         key = get_encryption_key()
@@ -149,6 +150,43 @@ def initialize_database():
         FOREIGN KEY(tag_id) REFERENCES tags(id) ON DELETE CASCADE
     )
     """)
+
+    # 7. Embeddings Cache Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS embeddings_cache (
+        text_hash TEXT PRIMARY KEY,
+        vector TEXT NOT NULL, -- JSON string representation of list[float]
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
     
+    conn.commit()
+    conn.close()
+
+def get_cached_embedding(text_hash: str):
+    """
+    Retrieves the cached vector list[float] for a given text hash, if present.
+    """
+    import json
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT vector FROM embeddings_cache WHERE text_hash = ?", (text_hash,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return json.loads(row[0])
+    return None
+
+def cache_embedding(text_hash: str, vector: list):
+    """
+    Caches the generated vector list[float] mapped to its text hash.
+    """
+    import json
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT OR REPLACE INTO embeddings_cache (text_hash, vector) VALUES (?, ?)",
+        (text_hash, json.dumps(vector))
+    )
     conn.commit()
     conn.close()
