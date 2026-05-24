@@ -57,25 +57,42 @@ async def ingest_memory(doc: DocumentIngest): # It expects incoming data to stri
         raise HTTPException(status_code=500, detail=str(e))  # throw error if insertion was unsuccessful
 
 # this implements the RAG loop
-@app.post("/chat", response_model=ChatResponse) # whatever this endpoint returns will match your strict ChatResponse format
+@app.post("/chat", response_model=ChatResponse)
 async def chat_with_memory(query: ChatQuery): 
-    """Retrieves relevant memory chunks and asks Ollama to generate an answer."""
+    """Retrieves relevant memory chunks via hybrid search, reranks them, and queries Ollama."""
     print(f"\n--- New Chat Request Received ---")
     print(f"User Query: {query.query}")
     
-    # 1. Retrieve context vectors (RAG)
+    # 1. Retrieve candidates via Hybrid Search
     try:
-        print("Searching LanceDB for relevant chunks...")
-        relevant_chunks = search_documents(query.query, top_k=query.top_k) # this returns the most textually relevant info
-        print(f"Found {len(relevant_chunks)} chunks.")
+        from app.db.vector_store import hybrid_search
+        print("Searching databases with hybrid vector + FTS index...")
+        # Get twice top_k candidates for the reranker to work with
+        candidates = hybrid_search(
+            query=query.query,
+            tags=query.tags,
+            file_type=query.file_type,
+            top_k=query.top_k * 2
+        )
+        print(f"Found {len(candidates)} hybrid candidates.")
     except Exception as e:
-        print(f"Database Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")  # throws error if retrieve was not successful
+        print(f"Database Search Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Database search error: {str(e)}")
 
-    # Loops through the database search results and pastes them together into one large string block.
+    # 2. Cross-Encoder Reranking
+    try:
+        from app.ml.reranker import rerank_chunks
+        print("Reranking candidates with Cross-Encoder...")
+        relevant_chunks = rerank_chunks(query.query, candidates, top_k=query.top_k)
+        print(f"Reranked down to top {len(relevant_chunks)} chunks.")
+    except Exception as e:
+        print(f"Reranker Error: {e}. Falling back to default candidates.")
+        relevant_chunks = candidates[:query.top_k]
+
+    # Form context text block
     context_text = "\n\n".join([f"Source ({c['source']}): {c['text']}" for c in relevant_chunks]) 
     
-    # 2. Build the prompt with retrieved context
+    # 3. Assemble prompt
     prompt = f"""
     You are an AI Memory Assistant. Use the following context to answer the user's question accurately.
     If the answer isn't in the context, say so. Do not hallucinate.
@@ -87,15 +104,19 @@ async def chat_with_memory(query: ChatQuery):
     {query.query}
     """
 
-    # 3. Call local Ollama LLM
+    # 4. Call local Ollama LLM with Keep-Alive parameter (unload after 5 minutes of inactivity)
+    selected_model = query.model or "qwen3.5:4b"
     ollama_payload = {
-        "model": "qwen3.5:4b", # Change this to your downloaded model
+        "model": selected_model,
         "prompt": prompt,
-        "stream": False
+        "stream": False,
+        "options": {
+            "keep_alive": "5m" # Unloads LLM from memory after 5 minutes of idle time
+        }
     }
 
     try:
-        print("Sending prompt to Ollama LLM (this may take a minute depending on your hardware)...")
+        print(f"Sending prompt to Ollama ({selected_model}) with 5-minute keep_alive...")
         response = requests.post(OLLAMA_URL, json=ollama_payload)
         response.raise_for_status()
         

@@ -145,3 +145,70 @@ def ingest_file_to_store(file_path: str, tags: List[str] = None) -> bool:
     conn.commit()
     conn.close()
     return True
+
+def hybrid_search(query: str, tags: List[str] = None, file_type: str = None, top_k: int = 5) -> List[dict]:
+    """
+    Performs hybrid search combining vector similarity and FTS keyword search,
+    scoring results using Reciprocal Rank Fusion (RRF), bounded by SQLite metadata filters.
+    """
+    from app.db.db_sqlite import get_sources_matching_filters
+    table = get_table()
+    
+    # 1. Resolve SQLite metadata filters
+    sources = None
+    if tags or file_type:
+        sources = get_sources_matching_filters(tags, file_type)
+        if not sources:
+            return [] # No files match metadata filters
+            
+    # Prepare filter condition for LanceDB
+    filter_expr = None
+    if sources is not None:
+        escaped_sources = [s.replace("'", "''") for s in sources]
+        filter_expr = f"source IN ({','.join([f'\'{s}\'' for s in escaped_sources])})"
+        
+    # 2. Vector similarity search
+    query_vector = generate_embedding(query)
+    vec_query = table.search(query_vector)
+    if filter_expr:
+        vec_query = vec_query.where(filter_expr)
+    vec_results = vec_query.limit(top_k * 2).to_list()
+    
+    # 3. Full-Text keyword search
+    fts_results = []
+    try:
+        try:
+            table.create_fts_index("text", replace=False)
+        except Exception:
+            pass
+            
+        fts_query = table.search(query)
+        if filter_expr:
+            fts_query = fts_query.where(filter_expr)
+        fts_results = fts_query.limit(top_k * 2).to_list()
+    except Exception as e:
+        print(f"FTS search fallback triggered: {e}")
+        fts_results = []
+        
+    # 4. Reciprocal Rank Fusion (RRF)
+    rrf_scores = {}
+    doc_map = {}
+    constant = 60
+    
+    for rank, doc in enumerate(vec_results):
+        doc_id = doc["text"]
+        doc_map[doc_id] = doc
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (constant + rank + 1))
+        
+    for rank, doc in enumerate(fts_results):
+        doc_id = doc["text"]
+        doc_map[doc_id] = doc
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (constant + rank + 1))
+        
+    sorted_docs = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+    
+    final_results = []
+    for doc_id, score in sorted_docs[:top_k]:
+        final_results.append(doc_map[doc_id])
+        
+    return final_results

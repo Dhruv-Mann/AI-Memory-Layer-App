@@ -14,7 +14,9 @@ class DocumentIngest(BaseModel): # New pydantic model called DocumentIngest.
 class ChatQuery(BaseModel):
     query: str  # query must be string
     top_k: int = 3  # defines the number of source documents the system should retrieve to answer the query.
-                    # Defaults to 3 if not specified by user.
+    tags: Optional[List[str]] = None
+    file_type: Optional[str] = None
+    model: Optional[str] = None
 
 # This class defines the structural output which the AI will send to the user.
 class ChatResponse(BaseModel):

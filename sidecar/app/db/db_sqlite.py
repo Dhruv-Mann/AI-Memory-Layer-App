@@ -190,3 +190,34 @@ def cache_embedding(text_hash: str, vector: list):
     )
     conn.commit()
     conn.close()
+
+def get_sources_matching_filters(tags: list = None, file_type: str = None) -> list:
+    """
+    Queries SQLite database to find file basenames matching specific tags and/or file types.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    query = "SELECT DISTINCT file_path FROM chunks_metadata m"
+    conditions = []
+    params = []
+    
+    if file_type:
+        conditions.append("m.file_type = ?")
+        params.append(file_type)
+        
+    if tags:
+        placeholders = ",".join(["?"] * len(tags))
+        query += f" JOIN chunk_tags ct ON ct.chunk_id = m.id JOIN tags t ON t.id = ct.tag_id"
+        conditions.append(f"t.name IN ({placeholders})")
+        params.extend(tags)
+        
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+        
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    import os
+    return [os.path.basename(r[0]) for r in rows]
