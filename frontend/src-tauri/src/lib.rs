@@ -37,7 +37,11 @@ pub fn run() {
         if let tauri::WindowEvent::Destroyed = event {
             let app = window.app_handle();
             let state = app.state::<SidecarState>();
-            if let Some(child) = state.child.lock().unwrap().take() {
+            let mut child_opt = None;
+            if let Ok(mut guard) = state.child.lock() {
+                child_opt = guard.take();
+            }
+            if let Some(child) = child_opt {
                 let _ = child.kill();
                 println!("FastAPI Sidecar terminated gracefully.");
             }
