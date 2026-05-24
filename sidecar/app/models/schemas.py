@@ -23,3 +23,7 @@ class ChatResponse(BaseModel):
     answer: str  # answer must be string.
     sources: List[str] #  A list of strings which contains the names, links, or text snippets to formulate
                        # the final answer.
+
+class GradeRequest(BaseModel):
+    card_id: str
+    grade: int # 1=Again, 2=Hard, 3=Good, 4=Easy

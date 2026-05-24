@@ -22,6 +22,7 @@ schema = pa.schema([
 ])
 
 def get_table():
+    os.makedirs(DB_PATH, exist_ok=True)
     db = lancedb.connect(DB_PATH)
     if "memory_chunks" not in db.table_names():
         return db.create_table("memory_chunks", schema=schema)

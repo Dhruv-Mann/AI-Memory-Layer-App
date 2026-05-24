@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException  # FastAPI -> build the web endpoints and HTTPException-> throw web (404) errors
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 import requests # to make HTTP calls from our code to the local AI engine
-from app.models.schemas import DocumentIngest, ChatQuery, ChatResponse
+import os
+from app.models.schemas import DocumentIngest, ChatQuery, ChatResponse, GradeRequest
 from app.db.vector_store import insert_document, search_documents
 
 from fastapi.responses import JSONResponse
-from fastapi import Request
 import logging
 
 # Configure basic logging to console
@@ -129,6 +129,127 @@ async def chat_with_memory(query: ChatQuery):
         print(f"Ollama Error: {e}")
         raise HTTPException(status_code=503, detail="Could not connect to local Ollama. Is the Ollama daemon running?")
 
+@app.get("/review/due")
+async def get_due_items(limit: int = 20):
+    """
+    Returns the current queue of cards due for FSRS review.
+    """
+    try:
+        from app.db.db_sqlite import get_due_cards
+        due_cards = get_due_cards(limit=limit)
+        return due_cards
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/review/grade")
+async def submit_review_grade(request: GradeRequest):
+    """
+    Submits a review grade (1-4) for a card, updating stability/difficulty metrics.
+    """
+    if request.grade not in [1, 2, 3, 4]:
+        raise HTTPException(status_code=400, detail="Grade must be between 1 and 4.")
+    try:
+        from app.db.db_sqlite import rate_card
+        result = rate_card(request.card_id, request.grade)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/analytics/dashboard")
+async def get_analytics_dashboard():
+    """
+    Calculates and returns tag mastery, decay curves, and heatmap stats.
+    """
+    try:
+        from app.db.db_sqlite import get_mastery_analytics
+        analytics = get_mastery_analytics()
+        return analytics
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/workspace/export")
+async def export_workspace():
+    """
+    Compiles database and LanceDB vector files into a ZIP archive for backup.
+    """
+    import zipfile
+    import tempfile
+    from fastapi.responses import FileResponse
+    from app.db.db_sqlite import get_db_path
+    from app.db.vector_store import DB_PATH
+    
+    try:
+        temp_dir = tempfile.gettempdir()
+        zip_path = os.path.join(temp_dir, "ai-memory-workspace.zip")
+        
+        sqlite_path = get_db_path()
+        lancedb_dir = DB_PATH
+        
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            if os.path.exists(sqlite_path):
+                zipf.write(sqlite_path, "metadata.db")
+                
+            if os.path.exists(lancedb_dir):
+                for root, dirs, files in os.walk(lancedb_dir):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        arcname = os.path.relpath(file_path, os.path.join(lancedb_dir, ".."))
+                        zipf.write(file_path, arcname)
+                        
+        return FileResponse(zip_path, media_type="application/zip", filename="ai-memory-workspace.zip")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+@app.post("/workspace/import")
+async def import_workspace(file: UploadFile = File(...)):
+    """
+    Restores database and vector files from a compiled backup ZIP.
+    """
+    import zipfile
+    import tempfile
+    import shutil
+    from app.db.db_sqlite import get_db_path
+    from app.db.vector_store import DB_PATH
+    
+    try:
+        temp_dir = tempfile.gettempdir()
+        zip_path = os.path.join(temp_dir, "imported-workspace.zip")
+        
+        with open(zip_path, "wb") as f:
+            f.write(await file.read())
+            
+        sqlite_path = get_db_path()
+        lancedb_dir = DB_PATH
+        
+        # Overwrite: clean current lancedb if it exists
+        shutil.rmtree(lancedb_dir, ignore_errors=True)
+        
+        with zipfile.ZipFile(zip_path, 'r') as zipf:
+            for member in zipf.infolist():
+                if member.filename == "metadata.db":
+                    os.makedirs(os.path.dirname(sqlite_path), exist_ok=True)
+                    with zipf.open(member) as source, open(sqlite_path, "wb") as target:
+                        shutil.copyfileobj(source, target)
+                elif member.filename.startswith("lancedb/"):
+                    target_dir = os.path.dirname(lancedb_dir)
+                    zipf.extract(member, path=target_dir)
+                    
+        return {"status": "success", "message": "Workspace imported and restored successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)
+    import sys
+    
+    # Simple port resolution parameter
+    port = 8000
+    if len(sys.argv) > 1:
+        try:
+            port = int(sys.argv[1])
+        except ValueError:
+            pass
+            
+    uvicorn.run("app.main:app", host="127.0.0.1", port=port, reload=True)
