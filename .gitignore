@@ -47,6 +47,7 @@ yarn-error.log*
 # Rust / Tauri
 target/
 **/*.rs.bk
+**/src-tauri/sidecars/
 
 # IDEs & Editors
 .vscode/
