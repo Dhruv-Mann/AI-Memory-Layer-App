@@ -15,6 +15,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "../../../local_data/lancedb")
 
 # Define the schema for LanceDB (256-dimensions using Matryoshka nomic-embed)
 schema = pa.schema([
+    pa.field("chunk_id", pa.string()),
     pa.field("vector", pa.list_(pa.float32(), 256)),
     pa.field("text", pa.string()),
     pa.field("source", pa.string())
@@ -32,7 +33,9 @@ def insert_document(text: str, source: str = "manual") -> bool:
     """
     table = get_table()
     vector = generate_embedding(text)
+    chunk_id = str(uuid.uuid4())
     table.add([{
+        "chunk_id": chunk_id,
         "vector": vector,
         "text": text,
         "source": source
@@ -106,6 +109,7 @@ def ingest_file_to_store(file_path: str, tags: List[str] = None) -> bool:
         vector = generate_embedding(chunk)
         
         rows_to_add.append({
+            "chunk_id": chunk_id,
             "vector": vector,
             "text": chunk,
             "source": source

@@ -221,3 +221,257 @@ def get_sources_matching_filters(tags: list = None, file_type: str = None) -> li
     
     import os
     return [os.path.basename(r[0]) for r in rows]
+
+def get_due_cards(limit: int = 20) -> list:
+    """
+    Retrieves due cards from SQLite, merges their actual text content from LanceDB,
+    and returns Svelte-compatible review models.
+    """
+    import os
+    from app.db.vector_store import get_table
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    query = """
+    SELECT 
+        c.id, c.chunk_id, m.file_path, m.file_type, 
+        c.difficulty, c.stability, c.reps, c.lapses, c.state, 
+        c.last_review, c.next_review,
+        (SELECT GROUP_CONCAT(t.name) FROM chunk_tags ct JOIN tags t ON t.id = ct.tag_id WHERE ct.chunk_id = m.id) as tags
+    FROM fsrs_cards c
+    JOIN chunks_metadata m ON m.id = c.chunk_id
+    WHERE c.next_review IS NULL OR c.next_review <= datetime('now')
+    ORDER BY 
+        CASE WHEN c.next_review IS NULL THEN 1 ELSE 0 END,
+        c.next_review ASC
+    LIMIT ?
+    """
+    cursor.execute(query, (limit,))
+    rows = cursor.fetchall()
+    conn.close()
+    
+    table = get_table()
+    due_cards = []
+    
+    for row in rows:
+        card_id, chunk_id, file_path, file_type, difficulty, stability, reps, lapses, state, last_review, next_review, tags_str = row
+        
+        text = ""
+        source = os.path.basename(file_path)
+        try:
+            chunk_results = table.search().where(f"chunk_id = '{card_id}'").limit(1).to_list()
+            if chunk_results:
+                text = chunk_results[0]["text"]
+                source = chunk_results[0]["source"]
+            else:
+                continue
+        except Exception as e:
+            print(f"Error fetching LanceDB chunk text for card {card_id}: {e}")
+            continue
+            
+        due_cards.append({
+            "id": card_id,
+            "chunk_id": chunk_id,
+            "text": text,
+            "source": source,
+            "file_path": file_path,
+            "file_type": file_type,
+            "difficulty": difficulty,
+            "stability": stability,
+            "reps": reps,
+            "lapses": lapses,
+            "state": state,
+            "last_review": last_review,
+            "next_review": next_review,
+            "tags": tags_str.split(",") if tags_str else []
+        })
+        
+    return due_cards
+
+def rate_card(card_id: str, grade: int) -> dict:
+    """
+    Applies the FSRS-5 scheduling algorithm to a review card, updates SQLite tables
+    (fsrs_cards and fsrs_logs), and returns the updated card details.
+    """
+    from app.ml.fsrs import FSRS
+    import uuid
+    from datetime import datetime, timedelta
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        "SELECT chunk_id, difficulty, stability, reps, lapses, state, last_review FROM fsrs_cards WHERE id = ?",
+        (card_id,)
+    )
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise ValueError(f"Card {card_id} not found.")
+        
+    chunk_id, difficulty, stability, reps, lapses, state, last_review = row
+    
+    elapsed_days = 0
+    if last_review:
+        try:
+            last_dt = datetime.strptime(last_review, "%Y-%m-%d %H:%M:%S")
+            elapsed_days = max(0, (datetime.now() - last_dt).days)
+        except Exception:
+            pass
+            
+    fsrs = FSRS()
+    new_s, new_d, interval = fsrs.step(stability, difficulty, reps, lapses, grade, elapsed_days)
+    
+    if grade == 1:
+        new_state = 3 # Relearning
+        new_lapses = lapses + 1
+    else:
+        new_state = 2 # Review
+        new_lapses = lapses
+        
+    new_reps = reps + 1
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    next_review_dt = datetime.now() + timedelta(days=interval)
+    next_review_str = next_review_dt.strftime("%Y-%m-%d %H:%M:%S")
+    
+    cursor.execute(
+        """
+        UPDATE fsrs_cards
+        SET difficulty = ?, stability = ?, reps = ?, lapses = ?, state = ?, last_review = ?, next_review = ?
+        WHERE id = ?
+        """,
+        (new_d, new_s, new_reps, new_lapses, new_state, now_str, next_review_str, card_id)
+    )
+    
+    log_id = str(uuid.uuid4())
+    cursor.execute(
+        """
+        INSERT INTO fsrs_logs (id, card_id, grade, rating, state, interval, review_time)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (log_id, card_id, grade, grade, new_state, interval, now_str)
+    )
+    
+    conn.commit()
+    conn.close()
+    
+    return {
+        "id": card_id,
+        "difficulty": new_d,
+        "stability": new_s,
+        "reps": new_reps,
+        "lapses": new_lapses,
+        "state": new_state,
+        "last_review": now_str,
+        "next_review": next_review_str,
+        "interval_days": interval
+    }
+
+def get_mastery_analytics() -> dict:
+    """
+    Computes weak-topic detection, mastery scores, daily review heatmap activity,
+    and predicted knowledge decay curves per tag.
+    """
+    from datetime import datetime
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT id, name FROM tags")
+    tags = cursor.fetchall()
+    
+    tag_mastery = []
+    decay_curves = {}
+    
+    for tag_id, tag_name in tags:
+        cursor.execute(
+            """
+            SELECT c.stability, c.last_review, c.reps, c.lapses
+            FROM fsrs_cards c
+            JOIN chunk_tags ct ON ct.chunk_id = c.chunk_id
+            WHERE ct.tag_id = ?
+            """,
+            (tag_id,)
+        )
+        cards = cursor.fetchall()
+        
+        if not cards:
+            continue
+            
+        r_sum = 0.0
+        active_count = 0
+        
+        for stability, last_review, reps, lapses in cards:
+            if reps > 0 and last_review:
+                try:
+                    last_dt = datetime.strptime(last_review, "%Y-%m-%d %H:%M:%S")
+                    elapsed = max(0, (datetime.now() - last_dt).days)
+                    r = (1.0 + elapsed / (9.0 * stability)) ** -0.5
+                    r_sum += r
+                    active_count += 1
+                except Exception:
+                    pass
+                    
+        mastery = (r_sum / active_count) if active_count > 0 else 1.0
+        
+        cursor.execute(
+            """
+            SELECT COUNT(*), SUM(CASE WHEN l.grade > 1 THEN 1 ELSE 0 END)
+            FROM fsrs_logs l
+            JOIN fsrs_cards c ON c.id = l.card_id
+            JOIN chunk_tags ct ON ct.chunk_id = c.chunk_id
+            WHERE ct.tag_id = ?
+            """,
+            (tag_id,)
+        )
+        log_counts = cursor.fetchone()
+        total_logs = log_counts[0] if log_counts else 0
+        success_logs = log_counts[1] if log_counts and log_counts[1] is not None else 0
+        accuracy = (success_logs / total_logs) if total_logs > 0 else 1.0
+        
+        tag_mastery.append({
+            "tag": tag_name,
+            "mastery_score": round(mastery * 100, 1),
+            "accuracy": round(accuracy * 100, 1),
+            "total_reviews": total_logs,
+            "card_count": len(cards)
+        })
+        
+        decay_curve = []
+        for day in range(30):
+            r_day_sum = 0.0
+            card_count_for_decay = 0
+            for stability, last_review, reps, lapses in cards:
+                if reps > 0 and last_review:
+                    try:
+                        last_dt = datetime.strptime(last_review, "%Y-%m-%d %H:%M:%S")
+                        elapsed = max(0, (datetime.now() - last_dt).days) + day
+                        r_day = (1.0 + elapsed / (9.0 * stability)) ** -0.5
+                        r_day_sum += r_day
+                        card_count_for_decay += 1
+                    except Exception:
+                        pass
+            avg_r_day = (r_day_sum / card_count_for_decay) if card_count_for_decay > 0 else 1.0
+            decay_curve.append(round(avg_r_day * 100, 1))
+            
+        decay_curves[tag_name] = decay_curve
+        
+    cursor.execute(
+        """
+        SELECT date(review_time) as rev_date, count(*) as count
+        FROM fsrs_logs
+        WHERE review_time >= datetime('now', '-90 days')
+        GROUP BY rev_date
+        ORDER BY rev_date ASC
+        """
+    )
+    heatmap_rows = cursor.fetchall()
+    heatmap = {r[0]: r[1] for r in heatmap_rows}
+    
+    conn.close()
+    
+    return {
+        "tag_mastery": tag_mastery,
+        "decay_curves": decay_curves,
+        "heatmap": heatmap
+    }
