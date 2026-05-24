@@ -3,10 +3,41 @@ import requests # to make HTTP calls from our code to the local AI engine
 from app.models.schemas import DocumentIngest, ChatQuery, ChatResponse
 from app.db.vector_store import insert_document, search_documents
 
+from fastapi.responses import JSONResponse
+from fastapi import Request
+import logging
+
+# Configure basic logging to console
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("api")
+
 app = FastAPI(title="AI Memory Layer API", version="1.0.0")
 
 # Local Ollama endpoint running on default port
 OLLAMA_URL = "http://localhost:11434/api/generate"
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Initializing metadata databases and tables...")
+    from app.db.db_sqlite import initialize_database
+    initialize_database()
+    logger.info("Metadata databases initialized successfully.")
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global unhandled exception on {request.url.path}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"status": "error", "detail": f"An unexpected error occurred: {str(exc)}"}
+    )
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    logger.warning(f"HTTP exception on {request.url.path}: {exc.detail}")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"status": "error", "detail": exc.detail}
+    )
 
 @app.get("/")
 async def root():
